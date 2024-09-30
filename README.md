@@ -1,5 +1,9 @@
 # API TO TEST
 
+## Hosted on
+
+https://api-to-test.onrender.com/
+
 ## Overview
 The House Plants API is a Node.js application that provides a simple RESTful API for managing house plants. It includes authentication via JWT, CRUD operations for plant data, and is designed for testing various API methodologies using frameworks like pytest and rest-assured.
 
