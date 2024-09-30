@@ -1,5 +1,8 @@
 const sequelize = require("./db/database");
+const bcrypt = require('bcrypt');
 const Plant = require("./models/Plant");
+const User = require('./models/User');  // Import the User model
+
 
 const seedDatabase = async () => {
   // Sync the model with the database (creates tables if they don't exist)
@@ -93,6 +96,17 @@ const seedDatabase = async () => {
   await Plant.bulkCreate(plants);
   console.log("Database seeded with house plants");
 
+  const hashedPassword1 = await bcrypt.hash('password123', 10);
+  const hashedPassword2 = await bcrypt.hash('mypassword', 10);
+
+  const users = [
+      { username: 'testuser1', password: hashedPassword1 },
+      { username: 'testuser2', password: hashedPassword2 },
+  ];
+
+  await User.bulkCreate(users);
+  console.log('Database seeded with house plants and users');
+  
   // Close the connection
   await sequelize.close();
 };

@@ -1,8 +1,11 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
-const Plant = require("./models/Plant"); // Plant model from Sequelize
+const bcrypt = require('bcrypt');
 const sequelize = require("./db/database"); // Sequelize instance
+const Plant = require("./models/Plant"); // Plant model from Sequelize
+const User = require('./models/User');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,17 +28,31 @@ const authenticateToken = (req, res, next) => {
 };
 
 // Login route to generate token
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
 
-  // Simple username/password check for demo purposes
-  if (username === "test" && password === "password") {
-    const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "1h" });
-    return res.json({ token });
-  }
+    try {
+        // Find user by username
+        const user = await User.findOne({ where: { username } });
 
-  return res.status(401).json({ message: "Invalid credentials" });
-});
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Compare provided password with stored hashed password
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate token if credentials are correct
+        const token = jwt.sign({ username: user.username }, SECRET_KEY, { expiresIn: '1h' });
+        return res.json({ token });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error', error });
+    }
+});;
 
 // GET method to retrieve all plants
 app.get("/plants", authenticateToken, async (req, res) => {
